@@ -1,0 +1,7 @@
+ENV USER=radhe
+
+RUN mkdir -p /app
+
+COPY . /app
+
+CMD ["python", "/app/app.py"]
