@@ -1,7 +1,9 @@
-ENV USER=radhe
+FROM python:3.11-slim
 
-RUN mkdir -p /app
+WORKDIR /app
 
-COPY . /app
+COPY . .
 
-CMD ["python", "/app/app.py"]
+RUN pip install -r requirements.txt
+
+CMD ["python", "script.py"]
