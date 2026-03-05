@@ -1,4 +1,4 @@
-name: Task3
+name: CI/CD AWS Deployment
 
 on:
   push:
@@ -13,30 +13,26 @@ jobs:
       - name: Checking out repository
         uses: actions/checkout@v4
 
-      - name: Setup python
-        uses: actions/setup-python@v6
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
         with:
-          python-version: '3.11'
-          cache: "pip"
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}\
+          aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Installing pytest
+      - name: Login to Amazon ECR
+        uses: aws-action/amazon-ecr-login@v2
+
+      - name: Build docker image
         run: |
-          python -m pip install --upgrade pip
-          pip install pytest
-          pip install -r requirements.txt
+          docker build -t myapp .
 
+      - name: Tag Docker image
+        run: |
+          docker tag myapp:latest \
+          ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazon.com/${{ secrets.ECR_REPOSITORY }}:latest
 
-      - name: Testing with pytest
-        run: pytest
-
-      - name: Authenticating with docker
-        run: echo "${{ secrets.DOCKER_PWD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
-
-      - name: Building docker image
-        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/myapp:latest .
-
-      - name: Pushing docker image to docker hub
-        run: docker push ${{ secrets.DOCKER_USERNAME }}/myapp:latest
-
-      - name: Success message
-        run: echo "Pipeline is working!"
+      - name: Push to ECR
+        run: |
+          docker push \
+          ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazon.com/${{ secrets.ECR_REPOSITORY }}:latest
