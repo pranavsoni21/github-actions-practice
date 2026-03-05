@@ -2,7 +2,7 @@ name: CI/CD AWS Deployment
 
 on:
   push:
-    branches: [ec2-push]
+    branches: [main]
 
 jobs:
   test:
@@ -21,7 +21,7 @@ jobs:
           aws-region: ap-south-1
 
       - name: Login to Amazon ECR
-        uses: aws-action/amazon-ecr-login@v2
+        uses: aws-actions/amazon-ecr-login@v2
 
       - name: Build docker image
         run: |
